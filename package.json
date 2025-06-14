@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run server\" \"npm run client\" \"npm run mobile\"",
     "client": "vite",
     "server": "nodemon server/server.js",
+    "mobile": "cd client-mobile && npm run dev",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

@@ -1,8 +1,8 @@
 # GuardShare - Secure File Sharing Platform
 
-A modern, secure file sharing platform built with React, Node.js, Express, and MongoDB. Features advanced link sharing with access controls, user management, and a beautiful glassmorphism UI.
+A modern, secure file sharing platform built with React, Node.js, Express, MongoDB, and React Native. Features advanced link sharing with access controls, user management, and beautiful glassmorphism UI across web and mobile platforms.
 
-## Features
+## 🚀 Features
 
 ### 🔐 Authentication & Security
 - JWT-based authentication with refresh tokens
@@ -25,7 +25,8 @@ A modern, secure file sharing platform built with React, Node.js, Express, and M
 - Download permission control
 
 ### 🎨 Modern UI/UX
-- Glassmorphism design with live lightning effects
+- **Web**: Glassmorphism design with live lightning effects
+- **Mobile**: Native iOS/Android experience with React Native
 - Dark/light theme support
 - Fully responsive design
 - Advanced search and filtering
@@ -37,12 +38,38 @@ A modern, secure file sharing platform built with React, Node.js, Express, and M
 - Activity monitoring and logs
 - System-wide overview
 
-## Quick Start
+### 📱 Mobile App Features
+- Native iOS and Android support via Expo Go
+- Offline data persistence with AsyncStorage
+- Real-time synchronization with WebSocket
+- Touch-optimized interface
+- Pull-to-refresh functionality
+- File upload with progress tracking
+- Bottom tab navigation
+
+## 🏗️ Architecture
+
+### Frontend
+- **Web Client**: React + TypeScript + Vite
+- **Mobile Client**: React Native + Expo Go
+- **Styling**: Tailwind CSS (Web) + React Native StyleSheet (Mobile)
+- **State Management**: Context API + Custom Hooks
+- **Real-time**: Socket.io Client
+
+### Backend
+- **Server**: Node.js + Express
+- **Database**: MongoDB + GridFS
+- **Authentication**: JWT + bcrypt
+- **Real-time**: Socket.io
+- **File Storage**: GridFS (MongoDB)
+
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js (v16 or higher)
 - MongoDB (local or Atlas)
-- npm or yarn
+- Expo CLI (for mobile development)
+- iOS Simulator or Android Emulator (optional)
 
 ### Installation
 
@@ -56,6 +83,8 @@ A modern, secure file sharing platform built with React, Node.js, Express, and M
    ```bash
    npm install
    cd server && npm install
+   cd ../client-mobile && npm install
+   cd ..
    ```
 
 3. **Environment Setup**
@@ -90,28 +119,75 @@ A modern, secure file sharing platform built with React, Node.js, Express, and M
    - **Superuser**: `admin` / `admin123`
    - **Demo User**: `demo` / `demo123`
 
-5. **Start Development Servers**
+5. **Start All Services**
    ```bash
    npm run dev
    ```
    
-   This starts both:
-   - Client: http://localhost:5173
-   - Server: http://localhost:5000
+   This starts:
+   - **Web Client**: http://localhost:5173
+   - **Server**: http://localhost:5000
+   - **Mobile**: Expo development server
 
-## Project Structure
+## 📱 Mobile Development
+
+### Running the Mobile App
+
+1. **Install Expo CLI globally**
+   ```bash
+   npm install -g @expo/cli
+   ```
+
+2. **Start the mobile development server**
+   ```bash
+   cd client-mobile
+   npm run dev
+   ```
+
+3. **Run on device/simulator**
+   - **iOS**: Press `i` in terminal or scan QR code with Camera app
+   - **Android**: Press `a` in terminal or scan QR code with Expo Go app
+   - **Web**: Press `w` in terminal
+
+### Mobile App Structure
+
+```
+client-mobile/
+├── src/
+│   ├── components/          # Reusable components
+│   │   ├── common/         # Common UI components
+│   │   └── ...
+│   ├── contexts/           # React contexts
+│   │   ├── AuthContext.jsx
+│   │   ├── ThemeContext.jsx
+│   │   └── DataContext.jsx
+│   ├── screens/            # Screen components
+│   │   ├── auth/          # Authentication screens
+│   │   ├── main/          # Main app screens
+│   │   └── public/        # Public screens
+│   ├── services/          # API services
+│   │   ├── api.js
+│   │   └── socketService.js
+│   └── ...
+├── App.jsx                # Main app component
+├── app.json              # Expo configuration
+└── package.json          # Dependencies
+```
+
+## 🌐 Project Structure
 
 ```
 guardshare/
-├── src/                    # React frontend
+├── src/                    # React web frontend
 │   ├── components/         # Reusable components
-│   │   ├── auth/          # Authentication components
-│   │   ├── dashboard/     # Dashboard components
-│   │   └── ui/            # UI components
 │   ├── contexts/          # React contexts
 │   ├── pages/             # Page components
 │   ├── services/          # API services
 │   └── styles/            # Global styles
+├── client-mobile/         # React Native mobile app
+│   ├── src/               # Mobile app source
+│   ├── App.jsx           # Mobile app entry
+│   └── app.json          # Expo configuration
 ├── server/                # Node.js backend
 │   ├── models/            # MongoDB models
 │   ├── routes/            # API routes
@@ -121,7 +197,49 @@ guardshare/
 └── docs/                  # Documentation
 ```
 
-## API Documentation
+## 🔧 Development Commands
+
+### Root Level
+- `npm run dev` - Start all services (web, server, mobile)
+- `npm run client` - Start web client only
+- `npm run server` - Start backend server only
+- `npm run mobile` - Start mobile development server
+- `npm run build` - Build web client for production
+
+### Mobile Specific
+- `cd client-mobile && npm run dev` - Start Expo development server
+- `cd client-mobile && npm run android` - Run on Android
+- `cd client-mobile && npm run ios` - Run on iOS
+- `cd client-mobile && npm run web` - Run mobile app in web browser
+
+### Server Specific
+- `cd server && npm run create-superuser` - Create admin account
+
+## 📱 Mobile Features
+
+### Core Functionality
+- **Authentication**: Login/Register with secure token storage
+- **File Management**: Upload, view, delete files with progress tracking
+- **Link Sharing**: Create and manage shareable links
+- **Real-time Updates**: Live synchronization across devices
+- **Offline Support**: Local data persistence with AsyncStorage
+
+### UI/UX Features
+- **Bottom Tab Navigation**: Intuitive navigation between main sections
+- **Pull-to-Refresh**: Refresh data with native pull gesture
+- **Modal Interfaces**: Full-screen modals for complex interactions
+- **Touch Feedback**: Proper haptic and visual feedback
+- **Responsive Design**: Adapts to different screen sizes
+- **Dark/Light Theme**: System-aware theme switching
+
+### Technical Features
+- **File Upload**: Progress tracking with FormData
+- **Image Caching**: Optimized image loading and caching
+- **Socket Integration**: Real-time updates via WebSocket
+- **Error Handling**: Comprehensive error states and recovery
+- **Loading States**: Proper loading indicators throughout
+
+## 🔐 API Documentation
 
 The API documentation is available in `api-routes.txt` with complete endpoint details, request/response formats, and authentication requirements.
 
@@ -132,7 +250,7 @@ The API documentation is available in `api-routes.txt` with complete endpoint de
 - **Link Sharing**: `/api/links/*`
 - **User Management**: `/api/users/*` (Superuser only)
 
-## User Roles
+## 👥 User Roles
 
 ### Regular User
 - Upload and manage files
@@ -146,7 +264,7 @@ The API documentation is available in `api-routes.txt` with complete endpoint de
 - View system-wide statistics
 - Access admin panels and logs
 
-## Security Features
+## 🔒 Security Features
 
 - **Rate Limiting**: Prevents API abuse
 - **CORS Protection**: Configured for production
@@ -154,12 +272,20 @@ The API documentation is available in `api-routes.txt` with complete endpoint de
 - **File Security**: Safe file upload and storage
 - **Access Control**: Granular permission system
 - **Activity Logging**: Complete audit trail
+- **Secure Storage**: Encrypted token storage on mobile
 
-## Deployment
+## 🚀 Deployment
 
-### Production Build
+### Web Application
 ```bash
 npm run build
+```
+
+### Mobile Application
+```bash
+cd client-mobile
+expo build:android  # For Android APK
+expo build:ios      # For iOS IPA
 ```
 
 ### Environment Variables
@@ -170,27 +296,33 @@ Ensure all production environment variables are set:
 - `CLIENT_URL`: Production client URL
 
 ### Recommended Deployment
-- **Frontend**: Netlify, Vercel, or CDN
+- **Web Frontend**: Netlify, Vercel, or CDN
+- **Mobile App**: App Store / Google Play Store
 - **Backend**: Railway, Heroku, or VPS
 - **Database**: MongoDB Atlas
 - **File Storage**: GridFS (included) or cloud storage
 
-## Development
+## 🧪 Testing
 
-### Available Scripts
-- `npm run dev`: Start development servers
-- `npm run build`: Build for production
-- `npm run server`: Start backend only
-- `npm run client`: Start frontend only
-- `npm run create-superuser`: Create admin account
+### Web Testing
+```bash
+npm run test
+```
 
-### Code Style
-- ESLint configuration included
-- TypeScript for type safety
-- Consistent naming conventions
-- Component-based architecture
+### Mobile Testing
+```bash
+cd client-mobile
+npm run test
+```
 
-## Contributing
+### Cross-Platform Testing
+- Test on multiple devices and screen sizes
+- Verify API integration across platforms
+- Test offline functionality
+- Validate real-time updates
+- Check responsive layouts
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -198,14 +330,14 @@ Ensure all production environment variables are set:
 4. Add tests if applicable
 5. Submit a pull request
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support
+## 🆘 Support
 
 For support, please check the documentation or create an issue in the repository.
 
 ---
 
-**GuardShare** - Secure file sharing reimagined ⚡🛡️
+**GuardShare** - Secure file sharing reimagined across all platforms ⚡🛡️📱
