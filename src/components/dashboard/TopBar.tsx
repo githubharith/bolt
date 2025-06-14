@@ -36,22 +36,32 @@ const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenProfile }) => {
         {/* Left side */}
         <div className="d-flex align-items-center">
           <button
-            className="btn btn-link text-muted d-md-none me-2"
+            className="btn btn-link d-lg-none me-2"
             onClick={onToggleSidebar}
+            style={{ 
+              border: 'none', 
+              color: 'var(--gs-text-muted)',
+              padding: '0.375rem 0.75rem'
+            }}
           >
             <Menu size={20} />
           </button>
 
           {/* Search */}
           <form onSubmit={handleSearch} className="d-flex align-items-center">
-            <div className="input-group" style={{ maxWidth: '400px' }}>
+            <div className="input-group" style={{ maxWidth: '400px', minWidth: '250px' }}>
               <div className="dropdown">
                 <button
                   className="btn btn-outline-secondary dropdown-toggle"
                   type="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
-                  style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                  style={{ 
+                    borderTopRightRadius: 0, 
+                    borderBottomRightRadius: 0,
+                    borderColor: 'var(--gs-glass-border)',
+                    color: 'var(--gs-text-primary)'
+                  }}
                 >
                   {searchType === 'files' ? (
                     <FileText size={16} />
@@ -90,7 +100,14 @@ const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenProfile }) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{ borderLeft: 'none' }}
               />
-              <button className="btn btn-outline-secondary" type="submit">
+              <button 
+                className="btn btn-outline-secondary" 
+                type="submit"
+                style={{ 
+                  borderColor: 'var(--gs-glass-border)',
+                  color: 'var(--gs-text-primary)'
+                }}
+              >
                 <Search size={16} />
               </button>
             </div>
@@ -101,9 +118,14 @@ const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenProfile }) => {
         <div className="d-flex align-items-center">
           {/* Theme toggle */}
           <button
-            className="btn btn-link text-muted me-3"
+            className="btn btn-link me-3"
             onClick={toggleTheme}
             title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            style={{ 
+              border: 'none', 
+              color: 'var(--gs-text-muted)',
+              padding: '0.375rem 0.75rem'
+            }}
           >
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
@@ -114,6 +136,11 @@ const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenProfile }) => {
               className="btn btn-link text-decoration-none d-flex align-items-center"
               type="button"
               onClick={onOpenProfile}
+              style={{ 
+                border: 'none',
+                color: 'var(--gs-text-primary)',
+                padding: '0.375rem 0.75rem'
+              }}
             >
               <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
                    style={{ width: '32px', height: '32px' }}>
@@ -121,8 +148,10 @@ const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenProfile }) => {
                   {user?.username.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <span className="text-muted me-1">{user?.username}</span>
-              <ChevronDown className="text-muted" size={16} />
+              <span className="me-1 d-none d-sm-inline" style={{ color: 'var(--gs-text-muted)' }}>
+                {user?.username}
+              </span>
+              <ChevronDown size={16} style={{ color: 'var(--gs-text-muted)' }} />
             </button>
           </div>
         </div>

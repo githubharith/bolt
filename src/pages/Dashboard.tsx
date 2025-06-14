@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/dashboard/Sidebar';
 import TopBar from '../components/dashboard/TopBar';
 import Home from '../components/dashboard/Home';
@@ -13,14 +13,31 @@ const Dashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const { user } = useAuth();
+  const location = useLocation();
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 992) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
   };
 
   const openProfileModal = () => {
@@ -34,16 +51,13 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       
       {/* Sidebar overlay for mobile */}
-      {sidebarOpen && (
-        <div 
-          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-md-none"
-          style={{ zIndex: 999 }}
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <div 
+        className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`}
+        onClick={closeSidebar}
+      />
 
       {/* Main content area */}
       <div className="main-content">
@@ -54,7 +68,7 @@ const Dashboard: React.FC = () => {
         />
 
         {/* Page content */}
-        <div className="container-fluid py-4">
+        <div className="container-fluid py-4 flex-grow-1">
           <Routes>
             <Route path="/" element={<Navigate to="home" replace />} />
             <Route path="home" element={<Home />} />
