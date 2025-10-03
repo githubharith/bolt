@@ -74,7 +74,7 @@ Get all files (superuser only)
 
 ## Link Routes (/links)
 
-### POST /links
+### POST 
 Create a new shareable link (requires auth)
 - Headers: Authorization: Bearer <token>
 - Body: { fileId, customName, expirationType?, expirationValue?, accessLimit?, verificationType?, verificationValue?, accessScope?, allowedUsers?, downloadAllowed?, description? }

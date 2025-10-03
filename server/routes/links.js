@@ -147,6 +147,7 @@ router.get('/', authenticate, async (req, res) => {
       limit = 10, 
       search = '',
       active = '',
+      favorite = '',
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
@@ -164,6 +165,10 @@ router.get('/', authenticate, async (req, res) => {
 
     if (active !== '') {
       query.isActive = active === 'true';
+    }
+
+    if (favorite !== '') {
+      query.favorite = favorite === 'true';
     }
 
     const sort = {};
@@ -490,6 +495,45 @@ router.patch('/:id/toggle', authenticate, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error toggling link status'
+    });
+  }
+});
+
+// Toggle link favorite status
+router.patch('/:id/toggle-favorite', authenticate, async (req, res) => {
+  try {
+    const link = await Link.findOne({
+      _id: req.params.id
+    });
+
+    if (!link) {
+      return res.status(404).json({
+        success: false,
+        message: 'Link not found'
+      });
+    }
+
+    // Check permissions
+    if (link.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'superuser') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    link.favorite = !link.favorite;
+    await link.save();
+
+    res.json({
+      success: true,
+      message: `Link ${link.favorite ? 'favorited' : 'unfavorited'} successfully`,
+      link
+    });
+  } catch (error) {
+    console.error('Toggle favorite error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error toggling favorite status'
     });
   }
 });

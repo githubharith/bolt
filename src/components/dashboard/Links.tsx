@@ -15,7 +15,8 @@ import {
   Lock,
   Download,
   SortAsc,
-  SortDesc
+  SortDesc,
+  Star
 } from 'lucide-react';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import CreateLinkModal from './CreateLinkModal';
@@ -40,6 +41,7 @@ interface Link {
   accessScope: 'public' | 'users' | 'selected';
   downloadAllowed: boolean;
   isActive: boolean;
+  favorite: boolean;
 }
 
 const Links: React.FC = () => {
@@ -51,11 +53,12 @@ const Links: React.FC = () => {
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [favoriteFilter, setFavoriteFilter] = useState<boolean | undefined>(undefined);
   const [createLinkModalOpen, setCreateLinkModalOpen] = useState(false);
 
   useEffect(() => {
     loadLinks();
-  }, [currentPage, searchQuery, sortBy, sortOrder, activeFilter]);
+  }, [currentPage, searchQuery, sortBy, sortOrder, activeFilter, favoriteFilter]);
 
   const loadLinks = async () => {
     try {
@@ -65,6 +68,7 @@ const Links: React.FC = () => {
         limit: 10,
         search: searchQuery,
         active: activeFilter === 'all' ? undefined : activeFilter === 'active',
+        favorite: favoriteFilter,
         sortBy,
         sortOrder
       });
@@ -100,6 +104,15 @@ const Links: React.FC = () => {
       loadLinks();
     } catch (error) {
       console.error('Error toggling link:', error);
+    }
+  };
+
+  const handleToggleFavorite = async (linkId: string) => {
+    try {
+      await linksAPI.toggleFavorite(linkId);
+      loadLinks();
+    } catch (error) {
+      console.error('Error toggling link favorite:', error);
     }
   };
 
@@ -196,31 +209,22 @@ const Links: React.FC = () => {
               <div className="d-flex gap-2 justify-content-md-end">
                 <div className="btn-group" role="group">
                   <button
-                    className={`btn ${activeFilter === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    className={`btn ${favoriteFilter === undefined ? 'btn-primary' : 'btn-outline-primary'}`}
                     onClick={() => {
-                      setActiveFilter('all');
+                      setFavoriteFilter(undefined);
                       setCurrentPage(1);
                     }}
                   >
                     All
                   </button>
                   <button
-                    className={`btn ${activeFilter === 'active' ? 'btn-success' : 'btn-outline-success'}`}
+                    className={`btn ${favoriteFilter === true ? 'btn-success' : 'btn-outline-success'}`}
                     onClick={() => {
-                      setActiveFilter('active');
+                      setFavoriteFilter(true);
                       setCurrentPage(1);
                     }}
                   >
-                    Active
-                  </button>
-                  <button
-                    className={`btn ${activeFilter === 'inactive' ? 'btn-secondary' : 'btn-outline-secondary'}`}
-                    onClick={() => {
-                      setActiveFilter('inactive');
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Inactive
+                    Favorite
                   </button>
                 </div>
               </div>
@@ -262,6 +266,7 @@ const Links: React.FC = () => {
                 <table className="table table-hover mb-0">
                   <thead>
                     <tr>
+                      <th>Favorite</th>
                       <th>Link</th>
                       <th 
                         className="cursor-pointer user-select-none"
@@ -288,7 +293,7 @@ const Links: React.FC = () => {
                       <th>Security</th>
                       <th>Download</th>
                       <th>Active</th>
-                      <th width="100">Actions</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -296,10 +301,18 @@ const Links: React.FC = () => {
                       <tr key={link._id}>
                         <td>
                           <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => window.open(`/link/${link.linkId}`, '_blank')}
+                            className={`btn btn-sm ${link.favorite ? 'btn-warning' : 'btn-outline-secondary'}`}
+                            onClick={() => handleToggleFavorite(link._id)}
                           >
-                            <ExternalLink size={14} />
+                            <Star size={14} />
+                          </button>
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => handleCopyLink(link.linkId)}
+                          >
+                            <Copy size={14} />
                           </button>
                         </td>
                         <td>

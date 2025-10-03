@@ -45,13 +45,15 @@ const Files: React.FC = () => {
   const [selectedFileForLink, setSelectedFileForLink] = useState<string | null>(null);
 
   useEffect(() => {
+    // In Files.tsx, before loadFiles
+console.log('filesAPI:', filesAPI);
     loadFiles();
   }, [currentPage, searchQuery, sortBy, sortOrder, favoriteFilter]);
 
   const loadFiles = async () => {
     try {
       setLoading(true);
-      const response = await filesAPI.getFiles({
+      const response = await filesAPI.getAll({
         page: currentPage,
         limit: 10,
         search: searchQuery,
@@ -259,7 +261,7 @@ const Files: React.FC = () => {
                       <th>Size</th>
                       <th>Links</th>
                       <th>Favorite</th>
-                      <th width="100">Actions</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>

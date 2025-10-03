@@ -104,6 +104,10 @@ const linkSchema = new mongoose.Schema({
   description: {
     type: String,
     maxlength: [500, 'Description cannot exceed 500 characters']
+  },
+  favorite: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

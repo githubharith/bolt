@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "message": "User registered successfully. Please login.",
+  "user": {
+    "id": "68ddecb5ede9b18276fd1998",
+    "username": "john",
+    "email": "john@gmail.com"
+  }
+}
+
+{
+  "username": "john",
+  "email": "john@gmail.com",
+  "password": "123456",
+  "confirmPassword": "123456"
+}
+
+{
+  "username": "john",
+  
+  "password": "123456"
+}
+
+
+{
+  "success": true,
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGRkZWNiNWVkZTliMTgyNzZmZDE5OTgiLCJpYXQiOjE3NTkzNzQ1NzgsImV4cCI6MTc1OTk3OTM3OH0.xNJ4w7esXmc5QLHlBWH9z9hFUNmiu87O4tAIMKtpZm0",
+  "user": {
+    "id": "68ddecb5ede9b18276fd1998",
+    "username": "john",
+    "email": "john@gmail.com",
+    "role": "user"
+  }
+}
+
+{"success":true,"message":"File uploaded successfully","file":{"id":"68ddf295ede9b18276fd19c2","customFilename":"test_upload.txt","originalFilename":"api-msg.txt","size":764,"mimetype":"text/plain","uploadedAt":"2025-10-02T03:33:41.481Z"}}

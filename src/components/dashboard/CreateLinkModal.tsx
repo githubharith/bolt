@@ -76,7 +76,7 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
 
   const loadFiles = async () => {
     try {
-      const response = await filesAPI.getFiles({ limit: 100 });
+      const response = await filesAPI.getAll({ limit: 100 });
       setFiles(response.data.files);
     } catch (error) {
       console.error('Error loading files:', error);
