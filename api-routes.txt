@@ -80,6 +80,12 @@ Create a new shareable link (requires auth)
 - Body: { fileId, customName, expirationType?, expirationValue?, accessLimit?, verificationType?, verificationValue?, accessScope?, allowedUsers?, downloadAllowed?, description? }
 - Response: { success, message, link }
 
+### PUT /links/:id
+Update a link (requires auth)
+- Headers: Authorization: Bearer <token>
+- Body: { customName?, expirationType?, expirationValue?, accessLimit?, verificationType?, verificationValue?, accessScope?, allowedUsers?, downloadAllowed?, description? }
+- Response: { success, message, link }
+
 ### GET /links
 Get user's links with pagination and filters (requires auth)
 - Headers: Authorization: Bearer <token>

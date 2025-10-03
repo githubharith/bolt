@@ -38,6 +38,7 @@ const Users: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -46,6 +47,7 @@ const Users: React.FC = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
+      setAccessDenied(false);
       const response = await usersAPI.getUsers({
         page: currentPage,
         limit: 20,
@@ -56,8 +58,11 @@ const Users: React.FC = () => {
       
       setUsers(response.data.users);
       setTotalPages(response.data.pagination.pages);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading users:', error);
+      if (error.status === 403) {
+        setAccessDenied(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -149,232 +154,242 @@ const Users: React.FC = () => {
       </div>
 
       {/* Users Table */}
-      <div className="card glass">
-        <div className="card-body p-0">
-          {loading ? (
-            <div className="text-center py-5">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-5">
-              <UsersIcon className="text-muted mb-3" size={64} />
-              <h5 className="text-muted mb-3">No users found</h5>
-              <p className="text-muted">
-                {searchQuery 
-                  ? 'Try adjusting your search query'
-                  : 'No users in the system'
-                }
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="table-responsive">
-                <table className="table table-hover mb-0">
-                  <thead>
-                    <tr>
-                      <th 
-                        className="cursor-pointer user-select-none"
-                        onClick={() => handleSort('username')}
-                      >
-                        <div className="d-flex align-items-center">
-                          Username
-                          {getSortIcon('username')}
-                        </div>
-                      </th>
-                      <th 
-                        className="cursor-pointer user-select-none"
-                        onClick={() => handleSort('email')}
-                      >
-                        <div className="d-flex align-items-center">
-                          Email
-                          {getSortIcon('email')}
-                        </div>
-                      </th>
-                      <th>Role</th>
-                      <th>Files</th>
-                      <th>Links</th>
-                      <th 
-                        className="cursor-pointer user-select-none"
-                        onClick={() => handleSort('createdAt')}
-                      >
-                        <div className="d-flex align-items-center">
-                          Joined
-                          {getSortIcon('createdAt')}
-                        </div>
-                      </th>
-                      <th 
-                        className="cursor-pointer user-select-none"
-                        onClick={() => handleSort('lastLogin')}
-                      >
-                        <div className="d-flex align-items-center">
-                          Last Login
-                          {getSortIcon('lastLogin')}
-                        </div>
-                      </th>
-                      <th>Status</th>
-                      <th width="100">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user) => (
-                      <tr key={user._id}>
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
-                                 style={{ width: '32px', height: '32px' }}>
-                              <span className="text-white fw-bold small">
-                                {user.username.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div className="fw-semibold">{user.username}</div>
-                          </div>
-                        </td>
-                        <td>
-                          <small>{user.email}</small>
-                        </td>
-                        <td>
-                          <div className="dropdown">
-                            <button
-                              className={`btn btn-sm dropdown-toggle ${
-                                user.role === 'superuser' ? 'btn-warning' : 'btn-outline-secondary'
-                              }`}
-                              data-bs-toggle="dropdown"
-                            >
-                              {user.role === 'superuser' ? (
-                                <Shield size={14} className="me-1" />
-                              ) : (
-                                <User size={14} className="me-1" />
-                              )}
-                              {user.role}
-                            </button>
-                            <ul className="dropdown-menu glass">
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleUpdateRole(user._id, 'user')}
-                                  disabled={user.role === 'user'}
-                                >
-                                  <User className="me-2" size={14} />
-                                  User
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleUpdateRole(user._id, 'superuser')}
-                                  disabled={user.role === 'superuser'}
-                                >
-                                  <Shield className="me-2" size={14} />
-                                  Superuser
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <FileText size={14} className="text-primary me-1" />
-                            <span>{user.stats.fileCount}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <LinkIcon size={14} className="text-success me-1" />
-                            <span>{user.stats.linkCount}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <small>{formatDate(user.createdAt)}</small>
-                        </td>
-                        <td>
-                          <small>{formatDate(user.lastLogin)}</small>
-                        </td>
-                        <td>
-                          <span className={`badge ${user.isActive ? 'bg-success' : 'bg-danger'}`}>
-                            {user.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="dropdown">
-                            <button
-                              className="btn btn-sm btn-outline-secondary"
-                              data-bs-toggle="dropdown"
-                            >
-                              <MoreVertical size={14} />
-                            </button>
-                            <ul className="dropdown-menu glass">
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => {
-                                    // TODO: Open user details modal
-                                    console.log('View user details:', user._id);
-                                  }}
-                                >
-                                  <Activity className="me-2" size={14} />
-                                  View Activity
-                                </button>
-                              </li>
-                              <li><hr className="dropdown-divider" /></li>
-                              <li>
-                                <button
-                                  className="dropdown-item text-danger"
-                                  onClick={() => handleDeleteUser(user._id, user.username)}
-                                >
-                                  <Trash2 className="me-2" size={14} />
-                                  Delete User
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+      {accessDenied ? (
+        <div className="card glass">
+          <div className="card-body text-center py-5">
+            <Shield className="text-danger mb-3" size={64} />
+            <h5 className="text-danger mb-3">Access Denied</h5>
+            <p className="text-muted">You do not have permission to view this page.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="card glass">
+          <div className="card-body p-0">
+            {loading ? (
+              <div className="text-center py-5">
+                <LoadingSpinner size="lg" />
               </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-center p-3">
-                  <nav>
-                    <ul className="pagination mb-0">
-                      <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => setCurrentPage(currentPage - 1)}
-                          disabled={currentPage === 1}
+            ) : users.length === 0 ? (
+              <div className="text-center py-5">
+                <UsersIcon className="text-muted mb-3" size={64} />
+                <h5 className="text-muted mb-3">No users found</h5>
+                <p className="text-muted">
+                  {searchQuery 
+                    ? 'Try adjusting your search query'
+                    : 'No users in the system'
+                  }
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="table-responsive">
+                  <table className="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th 
+                          className="cursor-pointer user-select-none"
+                          onClick={() => handleSort('username')}
                         >
-                          Previous
-                        </button>
-                      </li>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+                          <div className="d-flex align-items-center">
+                            Username
+                            {getSortIcon('username')}
+                          </div>
+                        </th>
+                        <th 
+                          className="cursor-pointer user-select-none"
+                          onClick={() => handleSort('email')}
+                        >
+                          <div className="d-flex align-items-center">
+                            Email
+                            {getSortIcon('email')}
+                          </div>
+                        </th>
+                        <th>Role</th>
+                        <th>Files</th>
+                        <th>Links</th>
+                        <th 
+                          className="cursor-pointer user-select-none"
+                          onClick={() => handleSort('createdAt')}
+                        >
+                          <div className="d-flex align-items-center">
+                            Joined
+                            {getSortIcon('createdAt')}
+                          </div>
+                        </th>
+                        <th 
+                          className="cursor-pointer user-select-none"
+                          onClick={() => handleSort('lastLogin')}
+                        >
+                          <div className="d-flex align-items-center">
+                            Last Login
+                            {getSortIcon('lastLogin')}
+                          </div>
+                        </th>
+                        <th>Status</th>
+                        <th width="100">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user._id}>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
+                                   style={{ width: '32px', height: '32px' }}>
+                                <span className="text-white fw-bold small">
+                                  {user.username.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                              <div className="fw-semibold">{user.username}</div>
+                            </div>
+                          </td>
+                          <td>
+                            <small>{user.email}</small>
+                          </td>
+                          <td>
+                            <div className="dropdown">
+                              <button
+                                className={`btn btn-sm dropdown-toggle ${
+                                  user.role === 'superuser' ? 'btn-warning' : 'btn-outline-secondary'
+                                }`}
+                                data-bs-toggle="dropdown"
+                              >
+                                {user.role === 'superuser' ? (
+                                  <Shield size={14} className="me-1" />
+                                ) : (
+                                  <User size={14} className="me-1" />
+                                )}
+                                {user.role}
+                              </button>
+                              <ul className="dropdown-menu glass">
+                                <li>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={() => handleUpdateRole(user._id, 'user')}
+                                    disabled={user.role === 'user'}
+                                  >
+                                    <User className="me-2" size={14} />
+                                    User
+                                  </button>
+                                </li>
+                                <li>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={() => handleUpdateRole(user._id, 'superuser')}
+                                    disabled={user.role === 'superuser'}
+                                  >
+                                    <Shield className="me-2" size={14} />
+                                    Superuser
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <FileText size={14} className="text-primary me-1" />
+                              <span>{user.stats.fileCount}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <LinkIcon size={14} className="text-success me-1" />
+                              <span>{user.stats.linkCount}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <small>{formatDate(user.createdAt)}</small>
+                          </td>
+                          <td>
+                            <small>{formatDate(user.lastLogin)}</small>
+                          </td>
+                          <td>
+                            <span className={`badge ${user.isActive ? 'bg-success' : 'bg-danger'}`}>
+                              {user.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="dropdown">
+                              <button
+                                className="btn btn-sm btn-outline-secondary"
+                                data-bs-toggle="dropdown"
+                              >
+                                <MoreVertical size={14} />
+                              </button>
+                              <ul className="dropdown-menu glass">
+                                <li>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={() => {
+                                      // TODO: Open user details modal
+                                      console.log('View user details:', user._id);
+                                    }}
+                                  >
+                                    <Activity className="me-2" size={14} />
+                                    View Activity
+                                  </button>
+                                </li>
+                                <li><hr className="dropdown-divider" /></li>
+                                <li>
+                                  <button
+                                    className="dropdown-item text-danger"
+                                    onClick={() => handleDeleteUser(user._id, user.username)}
+                                  >
+                                    <Trash2 className="me-2" size={14} />
+                                    Delete User
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="d-flex justify-content-center p-3">
+                    <nav>
+                      <ul className="pagination mb-0">
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                           <button
                             className="page-link"
-                            onClick={() => setCurrentPage(page)}
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
                           >
-                            {page}
+                            Previous
                           </button>
                         </li>
-                      ))}
-                      <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => setCurrentPage(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                        >
-                          Next
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              )}
-            </>
-          )}
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+                            <button
+                              className="page-link"
+                              onClick={() => setCurrentPage(page)}
+                            >
+                              {page}
+                            </button>
+                          </li>
+                        ))}
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                          >
+                            Next
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

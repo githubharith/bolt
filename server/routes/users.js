@@ -212,6 +212,49 @@ router.patch('/:id/role', authenticate, authorize('superuser'), async (req, res)
   }
 });
 
+// Activate or deactivate a user (superuser only)
+router.patch('/:id/status', authenticate, authorize('superuser'), async (req, res) => {
+  try {
+    const { isActive } = req.body;
+
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status provided'
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { isActive },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const action = isActive ? 'user_activated' : 'user_deactivated';
+    const message = `User ${user.username} has been ${isActive ? 'activated' : 'deactivated'}`;
+    await req.user.addActivityLog(action, message, req);
+
+    res.json({
+      success: true,
+      message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
+      user
+    });
+  } catch (error) {
+    console.error('Update user status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error updating user status'
+    });
+  }
+});
+
 // Get user activity logs (superuser only)
 router.get('/:id/activity', authenticate, authorize('superuser'), async (req, res) => {
   try {

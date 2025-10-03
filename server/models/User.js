@@ -5,7 +5,7 @@ const activityLogSchema = new mongoose.Schema({
   action: {
     type: String,
     required: true,
-    enum: ['register', 'login', 'logout', 'file_upload', 'link_create', 'link_access', 'file_delete', 'link_delete']
+    enum: ['register', 'login', 'logout', 'file_upload', 'link_create', 'link_update', 'link_access', 'file_delete', 'link_delete']
   },
   details: {
     type: String,

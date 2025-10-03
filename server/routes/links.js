@@ -139,6 +139,120 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
+// Update a link
+router.put('/:id', authenticate, async (req, res) => {
+  try {
+    const {
+      customName,
+      expirationType = 'none',
+      expirationValue,
+      accessLimit,
+      verificationType = 'none',
+      verificationValue,
+      accessScope = 'public',
+      allowedUsers = [],
+      downloadAllowed = false,
+      description = ''
+    } = req.body;
+
+    // Validate required fields
+    if (!customName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Custom name is required'
+      });
+    }
+
+    const link = await Link.findById(req.params.id);
+
+    if (!link) {
+      return res.status(404).json({
+        success: false,
+        message: 'Link not found'
+      });
+    }
+
+    // Check permissions
+    if (link.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'superuser') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    // Validate expiration settings
+    if (expirationType === 'duration' && (!expirationValue || expirationValue <= 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid expiration duration is required'
+      });
+    }
+
+    if (expirationType === 'date' && (!expirationValue || new Date(expirationValue) <= new Date())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid future expiration date is required'
+      });
+    }
+
+    // Validate verification settings
+    if (verificationType !== 'none' && !verificationValue) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification value is required when verification is enabled'
+      });
+    }
+
+    // Validate allowed users for selected access scope
+    if (accessScope === 'selected' && (!allowedUsers || allowedUsers.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one user must be selected for selected access scope'
+      });
+    }
+
+    // Update link properties
+    link.customName = customName;
+    link.expirationType = expirationType;
+    link.expirationValue = expirationType === 'date' ? new Date(expirationValue).getTime() : expirationValue;
+    link.accessLimit = accessLimit;
+    link.verificationType = verificationType;
+    link.verificationValue = verificationValue;
+    link.accessScope = accessScope;
+    link.allowedUsers = accessScope === 'selected' ? allowedUsers : [];
+    link.downloadAllowed = downloadAllowed;
+    link.description = description;
+
+    await link.save();
+    await req.user.addActivityLog('link_update', `Updated link: ${customName}`, req);
+
+    // Populate the response
+    await link.populate([
+      { path: 'file', select: 'customFilename originalFilename mimetype size' },
+      { path: 'createdBy', select: 'username email' },
+      { path: 'allowedUsers', select: 'username email' }
+    ]);
+
+    res.json({
+      success: true,
+      message: 'Link updated successfully',
+      link
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: 'This custom name is already taken. Please choose another one.'
+      });
+    }
+    console.error('Update link error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error updating link'
+    });
+  }
+});
+
 // Get user's links
 router.get('/', authenticate, async (req, res) => {
   try {
@@ -266,7 +380,7 @@ router.get('/access/:linkId', optionalAuth, async (req, res) => {
     if (link.accessScope === 'users' && !req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required to access this link'
+        message: 'Login is required to access this link'
       });
     }
 
@@ -382,7 +496,7 @@ router.get('/download/:linkId', optionalAuth, async (req, res) => {
     if (link.accessScope === 'users' && !req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: 'Login is required to access this link'
       });
     }
 

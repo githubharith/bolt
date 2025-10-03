@@ -168,6 +168,7 @@ export const linksAPI = {
   toggleFavorite: (linkId: string) => api.patch(`/links/${linkId}/toggle-favorite`),
   
   deleteLink: (linkId: string) => api.delete(`/links/${linkId}`),
+  updateLink: (linkId: string, linkData: any) => api.put(`/links/${linkId}`, linkData),
   
   // Admin endpoints
   adminGetAll: (params?: any) => api.get('/links/admin/all', { params })
@@ -188,6 +189,9 @@ export const usersAPI = {
   
   updateRole: (userId: string, role: 'user' | 'superuser') =>
     api.patch(`/users/${userId}/role`, { role }),
+
+  updateStatus: (userId: string, isActive: boolean) =>
+    api.patch(`/users/${userId}/status`, { isActive }),
   
   getActivityLogs: (userId: string, params?: {
     page?: number;

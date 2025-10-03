@@ -70,7 +70,7 @@ const corsOptions = {
     'Content-Disposition' // For file downloads
   ],
 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS','PATCH'],
   optionsSuccessStatus: 200 // For legacy browser support
 };
 

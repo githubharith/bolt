@@ -52,6 +52,8 @@ const LinkAccess: React.FC = () => {
         } else if (errorMsg.includes('username')) {
           setAuthType('username');
           setNeedsAuth(true);
+        } else if (errorMsg.includes('Login is required')) {
+          setError('This link is accessible only to logged-in users. Please log in to proceed.');
         } else if (errorMsg.includes('Authentication required')) {
           setError('This link requires authentication. Please log in to access it.');
         } else {

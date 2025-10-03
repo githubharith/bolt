@@ -15,6 +15,7 @@ import {
 import LoadingSpinner from '../ui/LoadingSpinner';
 import FileUploadModal from './FileUploadModal';
 import CreateLinkModal from './CreateLinkModal';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface File {
   _id: string;
@@ -32,6 +33,7 @@ interface File {
 }
 
 const Files: React.FC = () => {
+  const { theme } = useTheme();
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,6 +99,7 @@ console.log('filesAPI:', filesAPI);
   };
 
   const handleDeleteFile = async (fileId: string, filename: string) => {
+    console.log('Deleting file with ID:', fileId);
     if (window.confirm(`Are you sure you want to delete "${filename}"? This will also delete all associated links.`)) {
       try {
         await filesAPI.deleteFile(fileId);
@@ -236,7 +239,7 @@ console.log('filesAPI:', filesAPI);
           ) : (
             <>
               <div className="table-responsive">
-                <table className="table table-hover mb-0">
+                <table className={`table table-hover table-borderless mb-0 ${theme === 'dark' ? 'table-dark' : ''}`}>
                   <thead>
                     <tr>
                       <th 
@@ -264,7 +267,7 @@ console.log('filesAPI:', filesAPI);
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className='glass'>
                     {files.map((file) => (
                       <tr key={file._id}>
                         <td>

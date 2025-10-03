@@ -16,10 +16,13 @@ import {
   Download,
   SortAsc,
   SortDesc,
-  Star
+  Star,
+  Edit
 } from 'lucide-react';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import CreateLinkModal from './CreateLinkModal';
+import EditLinkModal from './EditLinkModal';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface Link {
   _id: string;
@@ -45,6 +48,7 @@ interface Link {
 }
 
 const Links: React.FC = () => {
+  const { theme } = useTheme();
   const [links, setLinks] = useState<Link[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,6 +59,8 @@ const Links: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [favoriteFilter, setFavoriteFilter] = useState<boolean | undefined>(undefined);
   const [createLinkModalOpen, setCreateLinkModalOpen] = useState(false);
+  const [editLinkModalOpen, setEditLinkModalOpen] = useState(false);
+  const [selectedLink, setSelectedLink] = useState<Link | null>(null);
 
   useEffect(() => {
     loadLinks();
@@ -133,6 +139,11 @@ const Links: React.FC = () => {
       // TODO: Show toast notification
       console.log('Link copied to clipboard');
     });
+  };
+
+  const handleEditLink = (link: Link) => {
+    setSelectedLink(link);
+    setEditLinkModalOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -247,8 +258,7 @@ const Links: React.FC = () => {
               <p className="text-muted mb-3">
                 {searchQuery || activeFilter !== 'all'
                   ? 'Try adjusting your search or filters'
-                  : 'Create your first shareable link'
-                }
+                  : 'Create your first shareable link'}
               </p>
               {!searchQuery && activeFilter === 'all' && (
                 <button
@@ -263,7 +273,7 @@ const Links: React.FC = () => {
           ) : (
             <>
               <div className="table-responsive">
-                <table className="table table-hover mb-0">
+                <table className={`table table-hover table-borderless mb-0 ${theme === 'dark' ? 'table-dark' : ''}`}>
                   <thead>
                     <tr>
                       <th>Favorite</th>
@@ -296,7 +306,7 @@ const Links: React.FC = () => {
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="glass">
                     {links.map((link) => (
                       <tr key={link._id}>
                         <td>
@@ -401,6 +411,15 @@ const Links: React.FC = () => {
                                   Open Link
                                 </button>
                               </li>
+                              <li>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleEditLink(link)}
+                                >
+                                  <Edit className="me-2" size={14} />
+                                  Edit Link
+                                </button>
+                              </li>
                               <li><hr className="dropdown-divider" /></li>
                               <li>
                                 <button
@@ -468,6 +487,17 @@ const Links: React.FC = () => {
         onClose={() => setCreateLinkModalOpen(false)}
         onLinkCreated={() => {
           setCreateLinkModalOpen(false);
+          loadLinks();
+        }}
+      />
+
+      {/* Edit Link Modal */}
+      <EditLinkModal
+        isOpen={editLinkModalOpen}
+        onClose={() => setEditLinkModalOpen(false)}
+        link={selectedLink}
+        onLinkUpdated={() => {
+          setEditLinkModalOpen(false);
           loadLinks();
         }}
       />
