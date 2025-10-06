@@ -85,10 +85,11 @@ const linkSchema = new mongoose.Schema({
     ref: 'User'
   }],
   
-  // Download control
-  downloadAllowed: {
-    type: Boolean,
-    default: false
+  // Access Type
+  accessType: {
+    type: String,
+    enum: ['info', 'view', 'download'],
+    default: 'info'
   },
   
   // Status

@@ -47,8 +47,6 @@ const Files: React.FC = () => {
   const [selectedFileForLink, setSelectedFileForLink] = useState<string | null>(null);
 
   useEffect(() => {
-    // In Files.tsx, before loadFiles
-console.log('filesAPI:', filesAPI);
     loadFiles();
   }, [currentPage, searchQuery, sortBy, sortOrder, favoriteFilter]);
 

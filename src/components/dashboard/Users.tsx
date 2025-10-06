@@ -182,8 +182,8 @@ const Users: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="table-responsive">
-                  <table className="table table-hover mb-0">
+                <div className="overflow-x-auto overflow-y-auto max-h-[500px] min-w-[900px]">
+                  <table className="table-auto w-full">
                     <thead>
                       <tr>
                         <th 
@@ -226,7 +226,7 @@ const Users: React.FC = () => {
                           </div>
                         </th>
                         <th>Status</th>
-                        <th width="100">Actions</th>
+                        <th className="w-[100px]">Actions</th>
                       </tr>
                     </thead>
                     <tbody>

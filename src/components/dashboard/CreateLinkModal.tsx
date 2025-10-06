@@ -53,7 +53,7 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
     verificationValue: '',
     accessScope: 'public',
     allowedUsers: [] as string[],
-    downloadAllowed: false,
+    accessType: 'info',
     description: ''
   });
 
@@ -132,8 +132,8 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
       return;
     }
 
-    if (formData.verificationType !== 'none' && !formData.verificationValue.trim()) {
-      setError('Please provide a verification value');
+    if (formData.verificationType === 'password' && !formData.verificationValue.trim()) {
+      setError('Please provide a password');
       return;
     }
 
@@ -155,14 +155,15 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
                         parseInt(formData.expirationValue),
         accessLimit: formData.accessLimit ? parseInt(formData.accessLimit) : null,
         verificationType: formData.verificationType,
-        verificationValue: formData.verificationType === 'none' ? null : formData.verificationValue.trim(),
+        verificationValue: formData.verificationType === 'password' ? formData.verificationValue.trim() : null,
         accessScope: formData.accessScope,
         allowedUsers: formData.accessScope === 'selected' ? formData.allowedUsers : [],
-        downloadAllowed: formData.downloadAllowed,
+        accessType: formData.accessType,
         description: formData.description.trim()
       };
 
-      await linksAPI.create(linkData);
+      console.log('Creating link with data:', linkData);
+      await handleCreateLink(linkData);
       
       // Reset form
       setFormData({
@@ -175,7 +176,7 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
         verificationValue: '',
         accessScope: 'public',
         allowedUsers: [],
-        downloadAllowed: false,
+        accessType: 'info',
         description: ''
       });
       
@@ -185,6 +186,10 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateLink = async (linkData: any) => {
+    await linksAPI.create(linkData);
   };
 
   const handleClose = () => {
@@ -199,7 +204,7 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
         verificationValue: '',
         accessScope: 'public',
         allowedUsers: [],
-        downloadAllowed: false,
+        accessType: 'info',
         description: ''
       });
       setError('');
@@ -389,14 +394,14 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
                         </select>
                       </div>
                       <div className="col-6">
-                        {formData.verificationType !== 'none' && (
+                        {formData.verificationType === 'password' && (
                           <input
-                            type={formData.verificationType === 'password' ? 'password' : 'text'}
+                            type="password"
                             className="form-control"
                             name="verificationValue"
                             value={formData.verificationValue}
                             onChange={handleInputChange}
-                            placeholder={`Enter ${formData.verificationType}`}
+                            placeholder="Enter password"
                             disabled={loading}
                           />
                         )}
@@ -471,25 +476,25 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
                     </div>
                   )}
 
-                  {/* Download Permission */}
+                  {/* Access Type */}
                   <div className="mb-3">
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="downloadAllowed"
-                        name="downloadAllowed"
-                        checked={formData.downloadAllowed}
-                        onChange={handleInputChange}
-                        disabled={loading}
-                      />
-                      <label className="form-check-label" htmlFor="downloadAllowed">
-                        <Download className="me-2" size={16} />
-                        Allow file download
-                      </label>
-                    </div>
+                    <label className="form-label">
+                      <Download className="me-2" size={16} />
+                      Access Type
+                    </label>
+                    <select
+                      className="form-select"
+                      name="accessType"
+                      value={formData.accessType}
+                      onChange={handleInputChange}
+                      disabled={loading}
+                    >
+                      <option value="info">Info (view file details only)</option>
+                      <option value="view">View (view file in browser)</option>
+                      <option value="download">Download (allow file download)</option>
+                    </select>
                     <small className="text-muted">
-                      If unchecked, users can only view file information
+                      Controls what users can do with the file.
                     </small>
                   </div>
                 </div>

@@ -8,7 +8,7 @@ interface LinkData {
   id: string;
   customName: string;
   description: string;
-  downloadAllowed: boolean;
+  accessType: 'info' | 'view' | 'download';
   file: {
     id: string;
     customFilename: string;
@@ -23,6 +23,7 @@ const LinkAccess: React.FC = () => {
   const [linkData, setLinkData] = useState<LinkData | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+  const [viewing, setViewing] = useState(false);
   const [error, setError] = useState('');
   const [needsAuth, setNeedsAuth] = useState(false);
   const [authType, setAuthType] = useState<'password' | 'username' | null>(null);
@@ -79,7 +80,7 @@ const LinkAccess: React.FC = () => {
   };
 
   const handleDownload = async () => {
-    if (!linkData?.downloadAllowed) return;
+    if (linkData?.accessType !== 'download') return;
 
     try {
       setDownloading(true);
@@ -103,6 +104,34 @@ const LinkAccess: React.FC = () => {
       setError(err.response?.data?.message || 'Download failed');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleView = async () => {
+    if (!linkData || (linkData.accessType !== 'view' && linkData.accessType !== 'download')) return;
+  
+    try {
+      setViewing(true);
+      
+      const authParams = authType && authValue 
+        ? (authType === 'password' ? { password: authValue } : { username: authValue })
+        : undefined;
+  
+      const response = await linksAPI.view(linkId!, authParams);
+      
+      const file = new Blob([response.data], { type: linkData.file.mimetype });
+      const fileURL = URL.createObjectURL(file);
+      
+      // Open file in a new tab
+      window.open(fileURL, '_blank');
+      
+      // Clean up the object URL after some time
+      setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
+  
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'File view failed');
+    } finally {
+      setViewing(false);
     }
   };
 
@@ -248,30 +277,61 @@ const LinkAccess: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Download Section */}
+                  {/* Action Buttons */}
                   <div className="text-center">
-                    {linkData.downloadAllowed ? (
-                      <button
-                        onClick={handleDownload}
-                        className="btn btn-success btn-lg"
-                        disabled={downloading}
-                      >
-                        {downloading ? (
-                          <>
-                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Downloading...
-                          </>
-                        ) : (
-                          <>
-                            <Download className="me-2" size={20} />
-                            Download File
-                          </>
-                        )}
-                      </button>
-                    ) : (
-                      <div className="alert alert-warning glass" role="alert">
+                    {linkData.accessType === 'info' ? (
+                      <div className="alert alert-info glass" role="alert">
                         <Clock className="me-2" size={18} />
-                        Download is not allowed for this link. You can only view the file information.
+                        Download and view are not allowed for this link. You can only see file information.
+                      </div>
+                    ) : (
+                      <div className="d-flex justify-content-center gap-2">
+                        {/* View Button */}
+                        {(linkData.accessType === 'view' || linkData.accessType === 'download') && (
+                          <button
+                            onClick={handleView}
+                            className="btn btn-info btn-lg"
+                            disabled={viewing}
+                          >
+                            {viewing ? (
+                              <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Opening...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="me-2" size={20} />
+                                View File
+                              </>
+                            )}
+                          </button>
+                        )}
+
+                        {/* Download Button */}
+                        {linkData.accessType === 'download' ? (
+                          <button
+                            onClick={handleDownload}
+                            className="btn btn-success btn-lg"
+                            disabled={downloading}
+                          >
+                            {downloading ? (
+                              <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Downloading...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="me-2" size={20} />
+                                Download File
+                              </>
+                            )}
+                          </button>
+                        ) : (
+                          <div className="alert alert-warning glass" role="alert">
+                            <Clock className="me-2" size={18} />
+                            Download is not allowed for this link.
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

@@ -123,6 +123,9 @@ export const filesAPI = {
   }) => api.get('/files', { params }),
   
   getRecent: () => api.get('/files/recent'),
+
+  viewFile: (fileId: string) => 
+    api.get(`/files/${fileId}/view`, { responseType: 'blob' }),
   
   download: (fileId: string) =>
     api.get(`/files/${fileId}/download`, { responseType: 'blob' }),
@@ -160,6 +163,14 @@ export const linksAPI = {
     password?: string;
     username?: string;
   }) => api.get(`/links/download/${linkId}`, {
+    params: credentials,
+    responseType: 'blob'
+  }),
+
+  view: (linkId: string, credentials?: {
+    password?: string;
+    username?: string;
+  }) => api.get(`/links/view/${linkId}`, {
     params: credentials,
     responseType: 'blob'
   }),

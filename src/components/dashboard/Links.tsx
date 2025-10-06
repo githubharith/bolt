@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { linksAPI } from '../../services/api';
 import { 
   Plus, 
@@ -23,6 +23,7 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 import CreateLinkModal from './CreateLinkModal';
 import EditLinkModal from './EditLinkModal';
 import { useTheme } from '../../contexts/ThemeContext';
+import { createPortal } from 'react-dom';
 
 interface Link {
   _id: string;
@@ -42,7 +43,7 @@ interface Link {
   currentAccessCount: number;
   verificationType: 'none' | 'password' | 'username';
   accessScope: 'public' | 'users' | 'selected';
-  downloadAllowed: boolean;
+  accessType: 'info' | 'view' | 'download';
   isActive: boolean;
   favorite: boolean;
 }
@@ -61,10 +62,32 @@ const Links: React.FC = () => {
   const [createLinkModalOpen, setCreateLinkModalOpen] = useState(false);
   const [editLinkModalOpen, setEditLinkModalOpen] = useState(false);
   const [selectedLink, setSelectedLink] = useState<Link | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadLinks();
   }, [currentPage, searchQuery, sortBy, sortOrder, activeFilter, favoriteFilter]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        closeDropdown();
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   const loadLinks = async () => {
     try {
@@ -136,8 +159,8 @@ const Links: React.FC = () => {
   const handleCopyLink = (linkId: string) => {
     const url = `${window.location.origin}/link/${linkId}`;
     navigator.clipboard.writeText(url).then(() => {
-      // TODO: Show toast notification
-      console.log('Link copied to clipboard');
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
     });
   };
 
@@ -145,6 +168,17 @@ const Links: React.FC = () => {
     setSelectedLink(link);
     setEditLinkModalOpen(true);
   };
+
+  const handleDropdownClick = (event: React.MouseEvent, linkId: string) => {
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    
+    setDropdownPosition({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
+    setDropdownOpen(linkId);
+  };
+
+  const closeDropdown = () => setDropdownOpen(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -220,6 +254,35 @@ const Links: React.FC = () => {
               <div className="d-flex gap-2 justify-content-md-end">
                 <div className="btn-group" role="group">
                   <button
+                    className={`btn ${activeFilter === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => {
+                      setActiveFilter('all');
+                      setCurrentPage(1);
+                    }}
+                  >
+                    All
+                  </button>
+                  <button
+                    className={`btn ${activeFilter === 'active' ? 'btn-success' : 'btn-outline-success'}`}
+                    onClick={() => {
+                      setActiveFilter('active');
+                      setCurrentPage(1);
+                    }}
+                  >
+                    Active
+                  </button>
+                  <button
+                    className={`btn ${activeFilter === 'inactive' ? 'btn-danger' : 'btn-outline-danger'}`}
+                    onClick={() => {
+                      setActiveFilter('inactive');
+                      setCurrentPage(1);
+                    }}
+                  >
+                    Inactive
+                  </button>
+                </div>
+                <div className="btn-group" role="group">
+                  <button
                     className={`btn ${favoriteFilter === undefined ? 'btn-primary' : 'btn-outline-primary'}`}
                     onClick={() => {
                       setFavoriteFilter(undefined);
@@ -272,7 +335,7 @@ const Links: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="table-responsive">
+              <div className="table-responsive" style={{ overflowX: 'auto' }}>
                 <table className={`table table-hover table-borderless mb-0 ${theme === 'dark' ? 'table-dark' : ''}`}>
                   <thead>
                     <tr>
@@ -366,7 +429,7 @@ const Links: React.FC = () => {
                           )}
                         </td>
                         <td>
-                          {link.downloadAllowed ? (
+                          {link.accessType === 'download' ? (
                             <Download size={14} className="text-success" />
                           ) : (
                             <span className="text-muted">—</span>
@@ -385,53 +448,63 @@ const Links: React.FC = () => {
                           </button>
                         </td>
                         <td>
-                          <div className="dropdown">
-                            <button
-                              className="btn btn-sm btn-outline-secondary"
-                              data-bs-toggle="dropdown"
-                            >
-                              <MoreVertical size={14} />
-                            </button>
-                            <ul className="dropdown-menu glass">
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleCopyLink(link.linkId)}
-                                >
-                                  <Copy className="me-2" size={14} />
-                                  Copy Link
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => window.open(`/link/${link.linkId}`, '_blank')}
-                                >
-                                  <ExternalLink className="me-2" size={14} />
-                                  Open Link
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleEditLink(link)}
-                                >
-                                  <Edit className="me-2" size={14} />
-                                  Edit Link
-                                </button>
-                              </li>
-                              <li><hr className="dropdown-divider" /></li>
-                              <li>
-                                <button
-                                  className="dropdown-item text-danger"
-                                  onClick={() => handleDeleteLink(link._id, link.customName)}
-                                >
-                                  <Trash2 className="me-2" size={14} />
-                                  Delete
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
+                          <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={(e) => handleDropdownClick(e, link._id)}
+                          >
+                            <MoreVertical size={14} />
+                          </button>
+                          {dropdownOpen === link._id && dropdownPosition &&
+                            createPortal(
+                              <div
+                                ref={dropdownRef}
+                                className={`dropdown-menu show position-fixed z-50 glass rounded shadow-lg max-h-48 overflow-y-auto min-w-[12rem] border ${theme === 'dark' ? 'border-secondary' : 'border-gray-200'}`}
+                                style={{
+                                  top: dropdownPosition.top,
+                                  left: dropdownPosition.left,
+                                  display: 'block',
+                                }}
+                                tabIndex={-1}
+                              >
+                                <ul className={`list-unstyled mb-0 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
+                                  <li>
+                                    <button
+                                      className="dropdown-item w-full text-left"
+                                      onClick={() => { handleCopyLink(link.linkId); closeDropdown(); }}
+                                    >
+                                      <Copy className="me-2" size={14} /> Copy Link
+                                    </button>
+                                  </li>
+                                  <li>
+                                    <button
+                                      className="dropdown-item w-full text-left"
+                                      onClick={() => { window.open(`/link/${link.linkId}`, '_blank'); closeDropdown(); }}
+                                    >
+                                      <ExternalLink className="me-2" size={14} /> Open Link
+                                    </button>
+                                  </li>
+                                  <li>
+                                    <button
+                                      className="dropdown-item w-full text-left"
+                                      onClick={() => { handleEditLink(link); closeDropdown(); }}
+                                    >
+                                      <Edit className="me-2" size={14} /> Edit Link
+                                    </button>
+                                  </li>
+                                  <li><hr className="dropdown-divider" /></li>
+                                  <li>
+                                    <button
+                                      className="dropdown-item w-full text-left text-danger"
+                                      onClick={() => { handleDeleteLink(link._id, link.customName); closeDropdown(); }}
+                                    >
+                                      <Trash2 className="me-2" size={14} /> Delete
+                                    </button>
+                                  </li>
+                                </ul>
+                              </div>,
+                              document.body
+                            )
+                          }
                         </td>
                       </tr>
                     ))}
@@ -501,6 +574,33 @@ const Links: React.FC = () => {
           loadLinks();
         }}
       />
+
+      {/* Copy Success Toast */}
+      {copySuccess && (
+        <div 
+          className="position-fixed bottom-0 end-0 p-3"
+          style={{ zIndex: 1050 }}
+        >
+          <div 
+            className="toast show align-items-center text-white bg-success border-0"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <div className="d-flex">
+              <div className="toast-body">
+                Link copied to clipboard!
+              </div>
+              <button 
+                type="button" 
+                className="btn-close btn-close-white me-2 m-auto" 
+                onClick={() => setCopySuccess(false)}
+                aria-label="Close"
+              ></button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

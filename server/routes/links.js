@@ -35,7 +35,7 @@ router.post('/', authenticate, async (req, res) => {
       verificationValue,
       accessScope = 'public',
       allowedUsers = [],
-      downloadAllowed = false,
+      accessType = 'info', // Changed from downloadAllowed
       description = ''
     } = req.body;
 
@@ -60,36 +60,6 @@ router.post('/', authenticate, async (req, res) => {
       });
     }
 
-    if (file.uploadedBy.toString() !== req.user._id.toString() && req.user.role !== 'superuser') {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied to this file'
-      });
-    }
-
-    // Validate expiration settings
-    if (expirationType === 'duration' && (!expirationValue || expirationValue <= 0)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid expiration duration is required'
-      });
-    }
-
-    if (expirationType === 'date' && (!expirationValue || new Date(expirationValue) <= new Date())) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid future expiration date is required'
-      });
-    }
-
-    // Validate verification settings
-    if (verificationType !== 'none' && !verificationValue) {
-      return res.status(400).json({
-        success: false,
-        message: 'Verification value is required when verification is enabled'
-      });
-    }
-
     // Validate allowed users for selected access scope
     if (accessScope === 'selected' && (!allowedUsers || allowedUsers.length === 0)) {
       return res.status(400).json({
@@ -98,8 +68,15 @@ router.post('/', authenticate, async (req, res) => {
       });
     }
 
-    // Create the link
-    const link = new Link({
+    // Validate username verification constraint
+    if (verificationType === 'username' && accessScope !== 'selected') {
+      return res.status(400).json({
+        success: false,
+        message: "Username verification requires access scope to be 'selected'."
+      });
+    }
+    
+    const linkData = {
       linkId: generateLinkId(),
       customName,
       file: fileId,
@@ -111,10 +88,11 @@ router.post('/', authenticate, async (req, res) => {
       verificationValue,
       accessScope,
       allowedUsers: accessScope === 'selected' ? allowedUsers : [],
-      downloadAllowed,
+      accessType, // Changed from downloadAllowed
       description
-    });
+    };
 
+    const link = new Link(linkData);
     await link.save();
     await req.user.addActivityLog('link_create', `Created link: ${customName}`, req);
 
@@ -151,7 +129,7 @@ router.put('/:id', authenticate, async (req, res) => {
       verificationValue,
       accessScope = 'public',
       allowedUsers = [],
-      downloadAllowed = false,
+      accessType = 'info', // Changed from downloadAllowed
       description = ''
     } = req.body;
 
@@ -211,6 +189,14 @@ router.put('/:id', authenticate, async (req, res) => {
       });
     }
 
+    // Validate username verification constraint
+    if (verificationType === 'username' && accessScope !== 'selected') {
+      return res.status(400).json({
+        success: false,
+        message: 'Username verification requires access scope to be \'selected\'.'
+      });
+    }
+
     // Update link properties
     link.customName = customName;
     link.expirationType = expirationType;
@@ -220,7 +206,7 @@ router.put('/:id', authenticate, async (req, res) => {
     link.verificationValue = verificationValue;
     link.accessScope = accessScope;
     link.allowedUsers = accessScope === 'selected' ? allowedUsers : [];
-    link.downloadAllowed = downloadAllowed;
+    link.accessType = accessType; // Changed from downloadAllowed
     link.description = description;
 
     await link.save();
@@ -377,7 +363,9 @@ router.get('/access/:linkId', optionalAuth, async (req, res) => {
     }
 
     // Check access scope
-    if (link.accessScope === 'users' && !req.user) {
+    if (link.accessScope === 'public') {
+      // Public links are accessible to everyone
+    } else if (link.accessScope === 'users' && !req.user) {
       return res.status(401).json({
         success: false,
         message: 'Login is required to access this link'
@@ -415,7 +403,18 @@ router.get('/access/:linkId', optionalAuth, async (req, res) => {
     }
 
     if (link.verificationType === 'username') {
-      if (!username || username !== link.verificationValue) {
+      if (link.accessScope !== 'selected' || !username) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid username or configuration'
+        });
+      }
+
+      const isUsernameMatch = link.allowedUsers.some(user => 
+        user.username.toLowerCase().includes(username.toLowerCase())
+      );
+
+      if (!isUsernameMatch) {
         return res.status(401).json({
           success: false,
           message: 'Invalid username'
@@ -433,7 +432,7 @@ router.get('/access/:linkId', optionalAuth, async (req, res) => {
         id: link._id,
         customName: link.customName,
         description: link.description,
-        downloadAllowed: link.downloadAllowed,
+        accessType: link.accessType, // Changed from downloadAllowed
         file: {
           id: link.file._id,
           customFilename: link.file.customFilename,
@@ -471,7 +470,7 @@ router.get('/download/:linkId', optionalAuth, async (req, res) => {
     }
 
     // Check if download is allowed
-    if (!link.downloadAllowed) {
+    if (link.accessType !== 'download') {
       return res.status(403).json({
         success: false,
         message: 'Download is not allowed for this link'
@@ -530,7 +529,18 @@ router.get('/download/:linkId', optionalAuth, async (req, res) => {
     }
 
     if (link.verificationType === 'username') {
-      if (!username || username !== link.verificationValue) {
+      if (link.accessScope !== 'selected' || !username) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid username or configuration'
+        });
+      }
+
+      const isUsernameMatch = link.allowedUsers.some(user => 
+        user.username.toLowerCase().includes(username.toLowerCase())
+      );
+
+      if (!isUsernameMatch) {
         return res.status(401).json({
           success: false,
           message: 'Invalid username'
@@ -553,6 +563,139 @@ router.get('/download/:linkId', optionalAuth, async (req, res) => {
     res.set({
       'Content-Type': link.file.mimetype,
       'Content-Disposition': `attachment; filename="${link.file.originalFilename}"`
+    });
+
+    // Log the download access
+    await link.addAccessLog(req.user, req);
+
+    // Increment file download count
+    link.file.downloadCount += 1;
+    await link.file.save();
+
+    // Pipe the file to response
+    downloadStream.pipe(res);
+
+  } catch (error) {
+    console.error('Download via link error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during download'
+    });
+  }
+});
+
+// View file via link
+router.get('/view/:linkId', optionalAuth, async (req, res) => {
+  try {
+    const { linkId } = req.params;
+    const { password, username } = req.query;
+
+    const link = await Link.findOne({ 
+      linkId,
+      isActive: true 
+    }).populate('file').populate('allowedUsers', 'username email');
+
+    if (!link) {
+      return res.status(404).json({
+        success: false,
+        message: 'Link not found or inactive'
+      });
+    }
+
+    // Check if view is allowed
+    if (link.accessType === 'info') {
+      return res.status(403).json({
+        success: false,
+        message: 'Viewing this file is not allowed'
+      });
+    }
+
+    // All the same checks as access endpoint
+    if (link.isExpired()) {
+      return res.status(410).json({
+        success: false,
+        message: 'Link has expired'
+      });
+    }
+
+    if (link.isAccessLimitReached()) {
+      return res.status(429).json({
+        success: false,
+        message: 'Access limit reached for this link'
+      });
+    }
+
+    if (link.accessScope === 'users' && !req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Login is required to access this link'
+      });
+    }
+
+    if (link.accessScope === 'selected') {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+      
+      const isAllowed = link.allowedUsers.some(
+        allowedUser => allowedUser._id.toString() === req.user._id.toString()
+      );
+      
+      if (!isAllowed) {
+        return res.status(403).json({
+          success: false,
+          message: 'You are not authorized to access this link'
+        });
+      }
+    }
+
+    if (link.verificationType === 'password') {
+      if (!password || password !== link.verificationValue) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid password'
+        });
+      }
+    }
+
+    if (link.verificationType === 'username') {
+      if (link.accessScope !== 'selected' || !username) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid username or configuration'
+        });
+      }
+
+      const isUsernameMatch = link.allowedUsers.some(user => 
+        user.username.toLowerCase().includes(username.toLowerCase())
+      );
+
+      if (!isUsernameMatch) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid username'
+        });
+      }
+    }
+
+    // Create download stream from GridFS
+    const downloadStream = gfsBucket.openDownloadStream(link.file.gridfsId);
+
+    downloadStream.on('error', (error) => {
+      console.error('Download stream error:', error);
+      res.status(404).json({
+        success: false,
+        message: 'File not found in storage'
+      });
+    });
+
+    // Set headers for file download
+    res.set({
+      'Content-Type': link.file.mimetype,
+      'Content-Disposition': `inline; filename="${link.file.originalFilename}"`
     });
 
     // Log the download access

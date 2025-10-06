@@ -46,7 +46,7 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
     verificationValue: '',
     accessScope: 'public',
     allowedUsers: [] as string[],
-    downloadAllowed: false,
+    accessType: 'info', // Changed from downloadAllowed
     description: ''
   });
 
@@ -61,7 +61,7 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
         verificationValue: link.verificationValue || '',
         accessScope: link.accessScope || 'public',
         allowedUsers: link.allowedUsers.map((u: any) => u._id) || [],
-        downloadAllowed: link.downloadAllowed || false,
+        accessType: link.accessType || 'info', // Changed from downloadAllowed
         description: link.description || ''
       });
     }
@@ -124,8 +124,8 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
       return;
     }
 
-    if (formData.verificationType !== 'none' && !formData.verificationValue.trim()) {
-      setError('Please provide a verification value');
+    if (formData.verificationType === 'password' && !formData.verificationValue.trim()) {
+      setError('Please provide a password');
       return;
     }
 
@@ -146,21 +146,25 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
                         parseInt(formData.expirationValue),
         accessLimit: formData.accessLimit ? parseInt(formData.accessLimit) : null,
         verificationType: formData.verificationType,
-        verificationValue: formData.verificationType === 'none' ? null : formData.verificationValue.trim(),
+        verificationValue: formData.verificationType === 'password' ? formData.verificationValue.trim() : null,
         accessScope: formData.accessScope,
         allowedUsers: formData.accessScope === 'selected' ? formData.allowedUsers : [],
-        downloadAllowed: formData.downloadAllowed,
+        accessType: formData.accessType, // Changed from downloadAllowed
         description: formData.description.trim()
       };
 
-      await linksAPI.updateLink(link._id, linkData);
-      
-      onLinkUpdated();
+      console.log('Updating link with data:', linkData);
+      handleEditLink(linkData);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update link');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditLink = async (linkData: any) => {
+    await linksAPI.updateLink(link._id, linkData);
+    onLinkUpdated();
   };
 
   const handleClose = () => {
@@ -340,14 +344,14 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
                         </select>
                       </div>
                       <div className="col-6">
-                        {formData.verificationType !== 'none' && (
+                        {formData.verificationType === 'password' && (
                           <input
-                            type={formData.verificationType === 'password' ? 'password' : 'text'}
+                            type="password"
                             className="form-control"
                             name="verificationValue"
                             value={formData.verificationValue}
                             onChange={handleInputChange}
-                            placeholder={`Enter ${formData.verificationType}`}
+                            placeholder="Enter password"
                             disabled={loading}
                           />
                         )}
@@ -422,25 +426,25 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
                     </div>
                   )}
 
-                  {/* Download Permission */}
+                  {/* Access Type */}
                   <div className="mb-3">
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="downloadAllowed-edit"
-                        name="downloadAllowed"
-                        checked={formData.downloadAllowed}
-                        onChange={handleInputChange}
-                        disabled={loading}
-                      />
-                      <label className="form-check-label" htmlFor="downloadAllowed-edit">
-                        <Download className="me-2" size={16} />
-                        Allow file download
-                      </label>
-                    </div>
+                    <label className="form-label">
+                      <Download className="me-2" size={16} />
+                      Access Type
+                    </label>
+                    <select
+                      className="form-select"
+                      name="accessType"
+                      value={formData.accessType}
+                      onChange={handleInputChange}
+                      disabled={loading}
+                    >
+                      <option value="info">Info (view file details only)</option>
+                      <option value="view">View (view file in browser)</option>
+                      <option value="download">Download (allow file download)</option>
+                    </select>
                     <small className="text-muted">
-                      If unchecked, users can only view file information
+                      Controls what users can do with the file.
                     </small>
                   </div>
                 </div>

@@ -160,9 +160,7 @@ router.get('/', authenticate, async (req, res) => {
 
     const files = await File.find(query)
       .populate('uploadedBy', 'username email')
-      .populate({
-        path: 'linksCount'
-      })
+      .populate('linksCount')
       .sort(sort)
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -210,6 +208,58 @@ router.get('/recent', authenticate, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error fetching recent files'
+    });
+  }
+});
+
+// View file in browser
+router.get('/:id/view', authenticate, async (req, res) => {
+  try {
+    const file = await File.findOne({
+      _id: req.params.id,
+      isActive: true
+    });
+
+    if (!file) {
+      return res.status(404).json({
+        success: false,
+        message: 'File not found'
+      });
+    }
+
+    // Check if user has access to this file
+    if (file.uploadedBy.toString() !== req.user._id.toString() && req.user.role !== 'superuser') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    // Create download stream from GridFS
+    const downloadStream = gfsBucket.openDownloadStream(file.gridfsId);
+
+    downloadStream.on('error', (error) => {
+      console.error('View stream error:', error);
+      res.status(404).json({
+        success: false,
+        message: 'File not found in storage'
+      });
+    });
+
+    // Set headers for file view
+    res.set({
+      'Content-Type': file.mimetype,
+      'Content-Disposition': `inline; filename="${file.originalFilename}"`
+    });
+
+    // Pipe the file to response
+    downloadStream.pipe(res);
+
+  } catch (error) {
+    console.error('View error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during file view'
     });
   }
 });
