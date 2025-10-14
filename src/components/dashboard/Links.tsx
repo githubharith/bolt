@@ -369,7 +369,7 @@ const Links: React.FC = () => {
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="glass">
+                  <tbody>
                     {links.map((link) => (
                       <tr key={link._id}>
                         <td>

@@ -217,7 +217,7 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1060 }}>
       <div className="modal-dialog modal-xl">
         <div className="modal-content glass">
           <div className="modal-header border-bottom border-secondary">

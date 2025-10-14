@@ -35,14 +35,14 @@ const LightningBackground: React.FC = () => {
 
       constructor() {
         this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.y = 0; // Start from the top
         this.targetX = Math.random() * canvas.width;
         this.targetY = Math.random() * canvas.height;
         this.segments = [];
         this.life = 0;
-        this.maxLife = 30 + Math.random() * 40;
-        this.color = Math.random() > 0.5 ? '#8B5CF6' : '#F59E0B'; // Purple or gold
-        this.width = 1 + Math.random() * 3;
+        this.maxLife = 20 + Math.random() * 20; // Shorter lifespan
+        this.color = Math.random() > 0.5 ? '#E0E7FF' : '#F0F2F5'; // Light blue or light gray
+        this.width = 0.5 + Math.random() * 1.5; // Thinner bolts
         
         this.generateSegments();
       }
@@ -55,8 +55,8 @@ const LightningBackground: React.FC = () => {
         this.segments = [{ x: this.x, y: this.y }];
 
         for (let i = 1; i < segments; i++) {
-          const x = this.x + dx * i + (Math.random() - 0.5) * 50;
-          const y = this.y + dy * i + (Math.random() - 0.5) * 50;
+          const x = this.x + dx * i + (Math.random() - 0.5) * 30;
+          const y = this.y + dy * i + (Math.random() - 0.5) * 30;
           this.segments.push({ x, y });
         }
 
@@ -72,11 +72,11 @@ const LightningBackground: React.FC = () => {
         const alpha = Math.max(0, 1 - this.life / this.maxLife);
         
         ctx.save();
-        ctx.globalAlpha = alpha * 0.8;
+        ctx.globalAlpha = alpha * 0.7;
         ctx.strokeStyle = this.color;
         ctx.lineWidth = this.width;
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 5; // Reduced blur
 
         ctx.beginPath();
         ctx.moveTo(this.segments[0].x, this.segments[0].y);
@@ -96,7 +96,7 @@ const LightningBackground: React.FC = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Add new lightning bolts randomly
-      if (Math.random() < 0.02) {
+      if (Math.random() < 0.01) { // Decreased frequency
         lightningBolts.push(new LightningBolt());
       }
 

@@ -265,7 +265,7 @@ const Files: React.FC = () => {
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody className='glass'>
+                  <tbody>
                     {files.map((file) => (
                       <tr key={file._id}>
                         <td>

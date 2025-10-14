@@ -6,9 +6,7 @@ import {
   FileText, 
   Link as LinkIcon, 
   Star, 
-  Calendar,
   Eye,
-  Download,
   MoreVertical,
   Plus
 } from 'lucide-react';
@@ -62,6 +60,8 @@ const Home: React.FC = () => {
         linksAPI.getRecent()
       ]);
       
+      console.log('filesResponse', filesResponse);
+      console.log('linksResponse', linksResponse);
       setRecentFiles(filesResponse.data.files);
       setRecentLinks(linksResponse.data.links);
     } catch (error) {

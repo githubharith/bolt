@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Eye, EyeOff, Shield, Zap, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, ShieldCheck, CheckCircle } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -102,10 +102,10 @@ const Register: React.FC = () => {
                 {/* Logo and Title */}
                 <div className="text-center mb-4">
                   <div className="d-flex align-items-center justify-content-center mb-3">
-                    <Shield className="text-primary me-2" size={32} />
-                    <Zap className="text-warning" size={24} />
+                    <ShieldCheck className="text-primary me-2" size={32} />
+                    <span className="fs-5 fw-bold text-gradient">Guard</span>
+                    <span className="fs-5 text-gradient">Share</span>
                   </div>
-                  <h1 className="font-handcrafted text-gradient mb-2">GuardShare</h1>
                   <p className="text-muted">Create your secure account</p>
                 </div>
 

@@ -7,8 +7,7 @@ import {
   Link as LinkIcon, 
   Users, 
   LogOut, 
-  Shield, 
-  Zap,
+  ShieldCheck,
   X
 } from 'lucide-react';
 
@@ -41,9 +40,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       <div className="p-3 border-bottom" style={{ borderColor: 'var(--gs-glass-border)' }}>
         <div className="d-flex align-items-center justify-content-between">
           <div className="d-flex align-items-center">
-            <Shield className="text-primary me-2" size={24} />
-            <Zap className="text-warning me-2" size={18} />
-            <span className="font-handcrafted text-gradient fw-bold">GuardShare</span>
+            <ShieldCheck className="text-primary me-2" size={28} />
+            <span className="fs-5 fw-bold text-gradient">Guard</span>
+            <span className="fs-5 text-gradient">Share</span>
           </div>
           <button
             className="btn btn-link text-muted d-lg-none p-1"

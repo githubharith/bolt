@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { linksAPI } from '../services/api';
-import { Download, Shield, Zap, Lock, User, Clock, AlertCircle } from 'lucide-react';
+import { Download, ShieldCheck, Shield, Lock, User, Clock, AlertCircle } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 interface LinkData {
@@ -162,10 +162,10 @@ const LinkAccess: React.FC = () => {
             {/* Header */}
             <div className="text-center mb-4">
               <div className="d-flex align-items-center justify-content-center mb-3">
-                <Shield className="text-primary me-2" size={32} />
-                <Zap className="text-warning" size={24} />
+                <ShieldCheck className="text-primary me-2" size={32} />
+                <span className="fs-5 fw-bold text-gradient">Guard</span>
+                <span className="fs-5 text-gradient">Share</span>
               </div>
-              <h1 className="font-handcrafted text-gradient mb-2">GuardShare</h1>
               <p className="text-muted">Secure File Access</p>
             </div>
 
@@ -339,7 +339,7 @@ const LinkAccess: React.FC = () => {
                   {/* Footer */}
                   <div className="text-center mt-4 pt-3 border-top border-secondary">
                     <small className="text-muted">
-                      Powered by <span className="text-gradient font-handcrafted">GuardShare</span>
+                      Powered by <span className="fw-bold text-gradient">Guard</span><span className="text-gradient">Share</span>
                     </small>
                   </div>
                 </div>
