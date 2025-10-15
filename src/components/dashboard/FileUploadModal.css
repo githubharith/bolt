@@ -1,0 +1,102 @@
+
+.file-upload-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1050; /* Ensure it's above other content but below the modal */
+  display: flex;
+  align-items: flex-start; /* Align to the top */
+  justify-content: center;
+  padding-top: 80px; /* Add padding to position it below the top bar */
+}
+
+.file-upload-modal-content {
+  width: 100%;
+  max-width: 800px; /* Increased width */
+  margin: 1rem;
+  animation: slide-down 0.3s ease-out forwards;
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.file-upload-modal-content .modal-content {
+  background: var(--gs-glass-strong-bg);
+  border: 1px solid var(--gs-glass-border);
+  border-radius: 16px;
+  color: var(--gs-text-primary);
+  box-shadow: 0 8px 32px var(--gs-shadow);
+}
+
+.file-upload-modal-content .modal-header {
+  border-bottom: 1px solid var(--gs-glass-border);
+}
+
+.file-upload-modal-content .modal-footer {
+  border-top: 1px solid var(--gs-glass-border);
+}
+
+.file-upload-modal-content .btn-close {
+  color: var(--gs-text-primary);
+}
+
+.drop-zone {
+  border: 2px dashed var(--gs-border);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: var(--gs-glass-bg);
+}
+
+.drop-zone.drag-over {
+  border-color: var(--gs-primary);
+  background-color: rgba(var(--gs-primary-rgb), 0.1);
+}
+
+.drop-zone-icon {
+  color: var(--gs-primary);
+  margin-bottom: 1rem;
+}
+
+.drop-zone h6 {
+  color: var(--gs-text-primary);
+  font-weight: 600;
+}
+
+.drop-zone p {
+  color: var(--gs-text-muted);
+  font-size: 0.875rem;
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.file-preview-icon {
+  color: var(--gs-primary);
+  margin-right: 1rem;
+}
+
+.file-preview-info .fw-semibold {
+  color: var(--gs-text-primary);
+}
+
+.file-preview-info .text-muted {
+  color: var(--gs-text-muted);
+}

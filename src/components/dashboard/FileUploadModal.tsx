@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { filesAPI } from '../../services/api';
 import { Upload, X, FileText, AlertCircle } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import './FileUploadModal.css';
 
 interface FileUploadModalProps {
   isOpen: boolean;
@@ -18,6 +20,7 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const { theme } = useTheme();
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -102,10 +105,10 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1060 }}>
-      <div className="modal-dialog modal-lg">
-        <div className="modal-content glass">
-          <div className="modal-header border-bottom border-secondary">
+    <div className={`file-upload-modal-overlay ${theme}`} onClick={handleClose}>
+      <div className="file-upload-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-content">
+          <div className="modal-header">
             <h5 className="modal-title">
               <Upload className="me-2" size={20} />
               Upload File
@@ -123,52 +126,47 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
               {error && (
-                <div className="alert alert-danger glass d-flex align-items-center" role="alert">
+                <div className="alert alert-danger d-flex align-items-center" role="alert">
                   <AlertCircle className="me-2" size={16} />
                   {error}
                 </div>
               )}
 
-              {/* File Drop Zone */}
               <div
-                className={`border-2 border-dashed rounded-3 p-4 text-center mb-4 ${
-                  dragOver ? 'border-primary bg-primary bg-opacity-10' : 'border-secondary'
-                }`}
+                className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
+                onClick={() => document.getElementById('fileInput')?.click()}
               >
                 {selectedFile ? (
-                  <div className="d-flex align-items-center justify-content-center">
-                    <FileText className="text-primary me-3" size={32} />
-                    <div className="text-start">
+                  <div className="file-preview">
+                    <FileText className="file-preview-icon" size={48} />
+                    <div className="file-preview-info">
                       <div className="fw-semibold">{selectedFile.name}</div>
-                      <small className="text-muted">
+                      <small>
                         {formatFileSize(selectedFile.size)} • {selectedFile.type || 'Unknown type'}
                       </small>
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <Upload className="text-muted mb-3" size={48} />
+                    <Upload className="drop-zone-icon" size={48} />
                     <h6>Drop your file here or click to browse</h6>
-                    <p className="text-muted mb-0">
-                      Maximum file size: 50MB
-                    </p>
+                    <p>Maximum file size: 50MB</p>
                   </div>
                 )}
                 
                 <input
                   type="file"
-                  className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
-                  style={{ cursor: 'pointer' }}
+                  id="fileInput"
+                  className="d-none"
                   onChange={handleFileInputChange}
                   disabled={uploading}
                 />
               </div>
 
-              {/* Custom Filename */}
-              <div className="mb-3">
+              <div className="my-3">
                 <label htmlFor="customFilename" className="form-label">
                   Custom Filename <span className="text-danger">*</span>
                 </label>
@@ -187,9 +185,8 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
                 </div>
               </div>
 
-              {/* File Info */}
               {selectedFile && (
-                <div className="card glass-strong p-3">
+                <div className="card glass p-3">
                   <h6 className="mb-2">File Information</h6>
                   <div className="row">
                     <div className="col-sm-6">
@@ -209,7 +206,7 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
               )}
             </div>
 
-            <div className="modal-footer border-top border-secondary">
+            <div className="modal-footer">
               <button
                 type="button"
                 className="btn btn-outline-secondary"
