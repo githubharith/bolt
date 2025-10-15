@@ -237,15 +237,13 @@ body {
 }
 
 /* Form controls */
-.form-control {
-  background: var(--gs-glass-bg);
-  border: 1px solid var(--gs-glass-border);
+.form-control{
+  background: var(--gs-bg-secondary);
+  border: 1px solid var(--gs-border);
   border-radius: 8px;
   color: var(--gs-text-primary);
-  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
-
 .form-control:focus {
   background: var(--gs-glass-strong-bg);
   border-color: var(--gs-primary);
@@ -270,6 +268,11 @@ body {
   background: var(--gs-glass-strong-bg);
   border-color: var(--gs-primary);
   box-shadow: 0 0 0 0.2rem rgba(var(--gs-primary-rgb), 0.25);
+  color: var(--gs-text-primary);
+}
+
+[data-theme="dark"] .form-select option {
+  background: var(--gs-bg-secondary);
   color: var(--gs-text-primary);
 }
 

@@ -105,10 +105,10 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className={`file-upload-modal-overlay ${theme}`} onClick={handleClose}>
+    <div className="file-upload-modal-overlay" onClick={handleClose}>
       <div className="file-upload-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-content">
-          <div className="modal-header">
+          <div className="modal-header border-bottom border-secondary">
             <h5 className="modal-title">
               <Upload className="me-2" size={20} />
               Upload File
@@ -126,47 +126,52 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
               {error && (
-                <div className="alert alert-danger d-flex align-items-center" role="alert">
+                <div className="alert alert-danger glass d-flex align-items-center" role="alert">
                   <AlertCircle className="me-2" size={16} />
                   {error}
                 </div>
               )}
 
+              {/* File Drop Zone */}
               <div
-                className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
+                className={`border-2 border-dashed rounded-3 p-4 text-center mb-4 ${
+                  dragOver ? 'border-primary bg-primary bg-opacity-10' : 'border-secondary'
+                }`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
-                onClick={() => document.getElementById('fileInput')?.click()}
               >
                 {selectedFile ? (
-                  <div className="file-preview">
-                    <FileText className="file-preview-icon" size={48} />
-                    <div className="file-preview-info">
+                  <div className="d-flex align-items-center justify-content-center">
+                    <FileText className="text-primary me-3" size={32} />
+                    <div className="text-start">
                       <div className="fw-semibold">{selectedFile.name}</div>
-                      <small>
+                      <small className="text-muted">
                         {formatFileSize(selectedFile.size)} • {selectedFile.type || 'Unknown type'}
                       </small>
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <Upload className="drop-zone-icon" size={48} />
+                    <Upload className="text-muted mb-3" size={48} />
                     <h6>Drop your file here or click to browse</h6>
-                    <p>Maximum file size: 50MB</p>
+                    <p className="text-muted mb-0">
+                      Maximum file size: 50MB
+                    </p>
                   </div>
                 )}
                 
                 <input
                   type="file"
-                  id="fileInput"
-                  className="d-none"
+                  className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
+                  style={{ cursor: 'pointer' }}
                   onChange={handleFileInputChange}
                   disabled={uploading}
                 />
               </div>
 
-              <div className="my-3">
+              {/* Custom Filename */}
+              <div className="mb-3">
                 <label htmlFor="customFilename" className="form-label">
                   Custom Filename <span className="text-danger">*</span>
                 </label>
@@ -185,8 +190,9 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
                 </div>
               </div>
 
+              {/* File Info */}
               {selectedFile && (
-                <div className="card glass p-3">
+                <div className="card glass-strong p-3">
                   <h6 className="mb-2">File Information</h6>
                   <div className="row">
                     <div className="col-sm-6">
@@ -206,7 +212,7 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
               )}
             </div>
 
-            <div className="modal-footer">
+            <div className="modal-footer border-top border-secondary">
               <button
                 type="button"
                 className="btn btn-outline-secondary"

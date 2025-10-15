@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { linksAPI } from '../services/api';
-import { Download, ShieldCheck, Shield, Lock, User, Clock, AlertCircle } from 'lucide-react';
+import { Download, ShieldCheck, Shield, Lock, User, Clock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 interface LinkData {
@@ -28,6 +28,7 @@ const LinkAccess: React.FC = () => {
   const [needsAuth, setNeedsAuth] = useState(false);
   const [authType, setAuthType] = useState<'password' | 'username' | null>(null);
   const [authValue, setAuthValue] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (linkId) {
@@ -68,15 +69,23 @@ const LinkAccess: React.FC = () => {
     }
   };
 
+  const handlePasswordVerification = () => {
+    if (!authValue.trim()) {
+      setError('Password is required');
+      return;
+    }
+    accessLink({ password: authValue });
+  };
+
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authValue.trim()) return;
-
-    const authParams = authType === 'password' 
-      ? { password: authValue }
-      : { username: authValue };
-    
-    accessLink(authParams);
+    if (authType === 'password') {
+      handlePasswordVerification();
+    } else {
+      if (!authValue.trim()) return;
+      const authParams = { username: authValue };
+      accessLink(authParams);
+    }
   };
 
   const handleDownload = async () => {
@@ -91,7 +100,6 @@ const LinkAccess: React.FC = () => {
 
       const response = await linksAPI.download(linkId!, authParams);
       
-      // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -122,10 +130,8 @@ const LinkAccess: React.FC = () => {
       const file = new Blob([response.data], { type: linkData.file.mimetype });
       const fileURL = URL.createObjectURL(file);
       
-      // Open file in a new tab
       window.open(fileURL, '_blank');
       
-      // Clean up the object URL after some time
       setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
   
     } catch (err: any) {
@@ -159,7 +165,6 @@ const LinkAccess: React.FC = () => {
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-8 col-lg-6">
-            {/* Header */}
             <div className="text-center mb-4">
               <div className="d-flex align-items-center justify-content-center mb-3">
                 <ShieldCheck className="text-primary me-2" size={32} />
@@ -169,7 +174,6 @@ const LinkAccess: React.FC = () => {
               <p className="text-muted">Secure File Access</p>
             </div>
 
-            {/* Error State */}
             {error && !needsAuth && (
               <div className="card glass p-4 text-center fade-in">
                 <div className="card-body">
@@ -183,7 +187,6 @@ const LinkAccess: React.FC = () => {
               </div>
             )}
 
-            {/* Authentication Required */}
             {needsAuth && (
               <div className="card glass p-4 fade-in">
                 <div className="card-body">
@@ -208,7 +211,7 @@ const LinkAccess: React.FC = () => {
                       </label>
                       <div className="position-relative">
                         <input
-                          type={authType === 'password' ? 'password' : 'text'}
+                          type={authType === 'password' ? (showPassword ? 'text' : 'password') : 'text'}
                           className="form-control pe-5"
                           id="authValue"
                           value={authValue}
@@ -217,7 +220,9 @@ const LinkAccess: React.FC = () => {
                           required
                         />
                         {authType === 'password' ? (
-                          <Lock className="position-absolute end-0 top-50 translate-middle-y me-3 text-muted" size={18} />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2 text-muted">
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
                         ) : (
                           <User className="position-absolute end-0 top-50 translate-middle-y me-3 text-muted" size={18} />
                         )}
@@ -243,7 +248,6 @@ const LinkAccess: React.FC = () => {
               </div>
             )}
 
-            {/* Link Content */}
             {linkData && !needsAuth && (
               <div className="card glass p-4 fade-in">
                 <div className="card-body">
@@ -252,7 +256,6 @@ const LinkAccess: React.FC = () => {
                     <h4 className="text-success">Access Granted</h4>
                   </div>
 
-                  {/* Link Info */}
                   <div className="mb-4">
                     <h5 className="text-primary mb-3">{linkData.customName}</h5>
                     {linkData.description && (
@@ -260,7 +263,6 @@ const LinkAccess: React.FC = () => {
                     )}
                   </div>
 
-                  {/* File Info */}
                   <div className="card glass-strong p-3 mb-4">
                     <div className="row align-items-center">
                       <div className="col">
@@ -277,7 +279,6 @@ const LinkAccess: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="text-center">
                     {linkData.accessType === 'info' ? (
                       <div className="alert alert-info glass" role="alert">
@@ -286,7 +287,6 @@ const LinkAccess: React.FC = () => {
                       </div>
                     ) : (
                       <div className="d-flex justify-content-center gap-2">
-                        {/* View Button */}
                         {(linkData.accessType === 'view' || linkData.accessType === 'download') && (
                           <button
                             onClick={handleView}
@@ -307,7 +307,6 @@ const LinkAccess: React.FC = () => {
                           </button>
                         )}
 
-                        {/* Download Button */}
                         {linkData.accessType === 'download' ? (
                           <button
                             onClick={handleDownload}
@@ -336,7 +335,6 @@ const LinkAccess: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Footer */}
                   <div className="text-center mt-4 pt-3 border-top border-secondary">
                     <small className="text-muted">
                       Powered by <span className="fw-bold text-gradient">Guard</span><span className="text-gradient">Share</span>

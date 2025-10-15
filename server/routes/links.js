@@ -757,7 +757,7 @@ router.patch('/:id/toggle', authenticate, async (req, res) => {
 });
 
 // Toggle link favorite status
-router.patch('/:id/toggle-favorite', authenticate, async (req, res) => {
+router.patch('/:id/favorite', authenticate, async (req, res) => {
   try {
     const link = await Link.findOne({
       _id: req.params.id

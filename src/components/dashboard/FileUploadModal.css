@@ -5,7 +5,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  /* background-color: rgba(0, 0, 0, 0.5); */
   backdrop-filter: blur(4px);
   z-index: 1050; /* Ensure it's above other content but below the modal */
   display: flex;
@@ -33,7 +33,7 @@
 }
 
 .file-upload-modal-content .modal-content {
-  background: var(--gs-glass-strong-bg);
+  background-color: var(--gs-bg-secondary);
   border: 1px solid var(--gs-glass-border);
   border-radius: 16px;
   color: var(--gs-text-primary);

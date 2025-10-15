@@ -4,13 +4,13 @@ import {
   Link as LinkIcon, 
   X, 
   Calendar, 
-  Clock, 
   Users, 
   Lock, 
   Download,
   AlertCircle,
   Search
 } from 'lucide-react';
+import './CreateLinkModal.css';
 
 interface CreateLinkModalProps {
   isOpen: boolean;
@@ -217,10 +217,10 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1060 }}>
-      <div className="modal-dialog modal-xl">
-        <div className="modal-content glass">
-          <div className="modal-header border-bottom border-secondary">
+    <div className="create-link-modal-overlay" onClick={handleClose}>
+      <div className="create-link-modal-dialog" onClick={(e) => e.stopPropagation()}>
+        <div className="create-link-modal-content">
+          <div className="modal-header border-bottom-0">
             <h5 className="modal-title">
               <LinkIcon className="me-2" size={20} />
               Create Shareable Link
@@ -390,7 +390,6 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
                         >
                           <option value="none">No verification</option>
                           <option value="password">Password</option>
-                          <option value="username">Username</option>
                         </select>
                       </div>
                       <div className="col-6">
@@ -423,7 +422,6 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({
                       disabled={loading}
                     >
                       <option value="public">Public (anyone with link)</option>
-                      <option value="users">Registered users only</option>
                       <option value="selected">Selected users only</option>
                     </select>
                   </div>

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { linksAPI, usersAPI } from '../../services/api';
 import { 
-  Link as LinkIcon, 
   X, 
   Calendar, 
-  Clock, 
   Users, 
   Lock, 
   Download,
@@ -12,6 +10,7 @@ import {
   Search,
   Edit
 } from 'lucide-react';
+import './CreateLinkModal.css';
 
 interface EditLinkModalProps {
   isOpen: boolean;
@@ -46,7 +45,7 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
     verificationValue: '',
     accessScope: 'public',
     allowedUsers: [] as string[],
-    accessType: 'info', // Changed from downloadAllowed
+    accessType: 'info',
     description: ''
   });
 
@@ -61,7 +60,7 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
         verificationValue: link.verificationValue || '',
         accessScope: link.accessScope || 'public',
         allowedUsers: link.allowedUsers.map((u: any) => u._id) || [],
-        accessType: link.accessType || 'info', // Changed from downloadAllowed
+        accessType: link.accessType || 'info',
         description: link.description || ''
       });
     }
@@ -149,12 +148,12 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
         verificationValue: formData.verificationType === 'password' ? formData.verificationValue.trim() : null,
         accessScope: formData.accessScope,
         allowedUsers: formData.accessScope === 'selected' ? formData.allowedUsers : [],
-        accessType: formData.accessType, // Changed from downloadAllowed
+        accessType: formData.accessType,
         description: formData.description.trim()
       };
 
       console.log('Updating link with data:', linkData);
-      handleEditLink(linkData);
+      await handleEditLink(linkData);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update link');
     } finally {
@@ -179,10 +178,10 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1060 }}>
-      <div className="modal-dialog modal-xl">
-        <div className="modal-content glass">
-          <div className="modal-header border-bottom border-secondary">
+    <div className="create-link-modal-overlay" onClick={handleClose}>
+      <div className="create-link-modal-dialog" onClick={(e) => e.stopPropagation()}>
+        <div className="create-link-modal-content">
+          <div className="modal-header border-bottom-0">
             <h5 className="modal-title">
               <Edit className="me-2" size={20} />
               Edit Shareable Link
@@ -340,7 +339,6 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
                         >
                           <option value="none">No verification</option>
                           <option value="password">Password</option>
-                          <option value="username">Username</option>
                         </select>
                       </div>
                       <div className="col-6">
@@ -373,7 +371,6 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
                       disabled={loading}
                     >
                       <option value="public">Public (anyone with link)</option>
-                      <option value="users">Registered users only</option>
                       <option value="selected">Selected users only</option>
                     </select>
                   </div>
