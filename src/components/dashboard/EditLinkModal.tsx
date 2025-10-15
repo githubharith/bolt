@@ -123,11 +123,6 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
       return;
     }
 
-    if (formData.verificationType === 'password' && !formData.verificationValue.trim()) {
-      setError('Please provide a password');
-      return;
-    }
-
     if (formData.accessScope === 'selected' && formData.allowedUsers.length === 0) {
       setError('Please select at least one user for selected access scope');
       return;
@@ -137,20 +132,27 @@ const EditLinkModal: React.FC<EditLinkModalProps> = ({
       setLoading(true);
       setError('');
 
-      const linkData = {
+      const linkData: any = {
         customName: formData.customName.trim(),
         expirationType: formData.expirationType,
-        expirationValue: formData.expirationType === 'none' ? null : 
+        expirationValue: formData.expirationType === 'none' ? null :
                         formData.expirationType === 'date' ? formData.expirationValue :
                         parseInt(formData.expirationValue),
         accessLimit: formData.accessLimit ? parseInt(formData.accessLimit) : null,
         verificationType: formData.verificationType,
-        verificationValue: formData.verificationType === 'password' ? formData.verificationValue.trim() : null,
         accessScope: formData.accessScope,
         allowedUsers: formData.accessScope === 'selected' ? formData.allowedUsers : [],
         accessType: formData.accessType,
         description: formData.description.trim()
       };
+
+      if (formData.verificationType === 'password') {
+        if (formData.verificationValue) {
+          linkData.verificationValue = formData.verificationValue.trim();
+        }
+      } else {
+        linkData.verificationValue = null;
+      }
 
       console.log('Updating link with data:', linkData);
       await handleEditLink(linkData);

@@ -203,7 +203,9 @@ router.put('/:id', authenticate, async (req, res) => {
     link.expirationValue = expirationType === 'date' ? new Date(expirationValue).getTime() : expirationValue;
     link.accessLimit = accessLimit;
     link.verificationType = verificationType;
-    link.verificationValue = verificationValue;
+    if ('verificationValue' in req.body) {
+      link.verificationValue = verificationValue;
+    }
     link.accessScope = accessScope;
     link.allowedUsers = accessScope === 'selected' ? allowedUsers : [];
     link.accessType = accessType; // Changed from downloadAllowed

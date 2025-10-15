@@ -51,7 +51,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const { status, data } = error.response || {};
+    const { status, data, config } = error.response || {};
+    const url = config?.url || '';
+
+    // Don't intercept 401s for link access, download, or view to allow custom handling
+    if (status === 401 && (url.includes('/links/access/') || url.includes('/links/download/') || url.includes('/links/view/'))) {
+      return Promise.reject(error);
+    }
     
     if (status === 401) {
       // Enhanced auth handling
