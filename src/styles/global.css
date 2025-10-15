@@ -157,6 +157,7 @@ body {
   display: flex;
   flex-direction: column;
   transition: margin-left 0.3s ease;
+  min-width: 0;
 }
 
 /* Responsive design */
